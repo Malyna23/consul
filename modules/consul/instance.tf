@@ -29,9 +29,17 @@ resource "null_resource" consul_cluster {
   }
 
   provisioner "file" {
-    source      = "keys"
+    source      = "keys/${count.index}"
     destination = "/home/ubuntu/keys"
   }
+   provisioner "file" {
+    source      = "keys/ca.pem"
+    destination = "/home/ubuntu/keys/ca.pem"
+  }
+  # provisioner "file" {
+  #   source      = "keys/"
+  #   destination = "/home/ubuntu/keys"
+  # }
     provisioner "file" {
     source      = "modules/consul/templates/config.json"
     destination = "/home/ubuntu/config.json"

@@ -10,7 +10,7 @@
     "http": 8501,
     "https": 8500
   },
-  "key_file": "/var/pki/private.pem",
-  "cert_file": "/var/pki/cert_locally.pem",
+  "key_file": "/var/pki/key.pem",
+  "cert_file": "/var/pki/cert.pem",
   "ca_file": "/var/pki/ca.pem"
 }
