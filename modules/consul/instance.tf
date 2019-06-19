@@ -28,19 +28,33 @@ resource "null_resource" consul_cluster {
     private_key = "${file("${var.aws_pem_key_file_path}")}"
   }
 
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "mkdir /home/ubuntu/vault/config"
+  #   ]
+  # }
+
   provisioner "file" {
     source      = "keys/${count.index}"
     destination = "/home/ubuntu/keys"
   }
-   provisioner "file" {
+
+  provisioner "file" {
     source      = "keys/ca.pem"
     destination = "/home/ubuntu/keys/ca.pem"
   }
-  # provisioner "file" {
-  #   source      = "keys/"
-  #   destination = "/home/ubuntu/keys"
-  # }
-    provisioner "file" {
+
+  provisioner "file" {
+    source      = "modules/consul/templates/local.json"
+    destination = "/home/ubuntu/local.json"
+  }
+  provisioner "file" {
+    source      = "vault"
+    destination = "/home/ubuntu/vault"
+  }
+
+
+  provisioner "file" {
     source      = "modules/consul/templates/config.json"
     destination = "/home/ubuntu/config.json"
   }
@@ -49,6 +63,12 @@ resource "null_resource" consul_cluster {
     inline = [<<EOF
           sudo apt-get -y update
           sudo apt -y update
+          sudo apt -y install unzip
+          wget https://releases.hashicorp.com/nomad/0.9.1/nomad_0.9.1_linux_amd64.zip
+          unzip nomad_0.9.1_linux_amd64.zip
+          sudo mv nomad /usr/local/bin/
+          nomad -autocomplete-install
+          complete -C /usr/local/bin/nomad nomad
           sudo apt -y install docker.io
           IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
           echo "Instance IP is: $IP"
@@ -60,6 +80,8 @@ resource "null_resource" consul_cluster {
     -bootstrap-expect="${var.count_consul}"
     sudo docker cp /home/ubuntu/config.json consul:/consul/config
     sudo docker restart consul
+    sudo docker run -d -p 8200:8200 -v /home/ubuntu/vault/:/vault --cap-add=IPC_LOCK  vault server
+
           EOF
     ]
   }
