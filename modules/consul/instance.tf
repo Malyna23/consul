@@ -28,12 +28,6 @@ resource "null_resource" consul_cluster {
     private_key = "${file("${var.aws_pem_key_file_path}")}"
   }
 
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "mkdir /home/ubuntu/vault/config"
-  #   ]
-  # }
-
   provisioner "file" {
     source      = "keys/${count.index}"
     destination = "/home/ubuntu/keys"
@@ -45,18 +39,18 @@ resource "null_resource" consul_cluster {
   }
 
   provisioner "file" {
-    source      = "modules/consul/templates/local.json"
-    destination = "/home/ubuntu/local.json"
-  }
-  provisioner "file" {
     source      = "vault"
     destination = "/home/ubuntu/vault"
   }
 
-
   provisioner "file" {
     source      = "modules/consul/templates/config.json"
     destination = "/home/ubuntu/config.json"
+  }
+
+  provisioner "file" {
+    content     = "${data.template_file.vault_conf.rendered}"
+    destination = "/home/ubuntu/vault/config/local.json"
   }
 
   provisioner "remote-exec" {
@@ -80,7 +74,8 @@ resource "null_resource" consul_cluster {
     -bootstrap-expect="${var.count_consul}"
     sudo docker cp /home/ubuntu/config.json consul:/consul/config
     sudo docker restart consul
-    sudo docker run -d -p 8200:8200 -v /home/ubuntu/vault/:/vault --cap-add=IPC_LOCK  vault server
+    sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
+    
 
           EOF
     ]

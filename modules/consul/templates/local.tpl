@@ -1,3 +1,4 @@
+ui = true
 listener "tcp" {
         address          = "0.0.0.0:8200"
         cluster_address  = "0.0.0.0:8201"
@@ -5,6 +6,6 @@ listener "tcp" {
       }
       
       storage "consul" {
-        address = "127.0.0.1:8500"
+        address = "${consul_ip}:8501"
         path    = "vault/"
       }

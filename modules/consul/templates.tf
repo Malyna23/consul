@@ -1,7 +1,7 @@
-# data "template_file" "jenkins_conf" {
-#   template = "${file("${path.module}/templates/jenkins.plugins.publish_over_ssh.BapSshPublisherPlugin.tpl")}"
-#   vars {
-#     web0_server = "${element(google_compute_instance.web.*.network_interface.0.network_ip, count.index)}"
-#     web1_server = "${element(google_compute_instance.web.*.network_interface.0.network_ip, count.index + 1)}"
-#   }
-# }
+data "template_file" "vault_conf" {
+  template = "${file("${path.module}/templates/local.tpl")}"
+  vars {
+    consul_ip = "${element(aws_instance.consul_server.*.private_ip, count.index)}"
+   
+  }
+}
