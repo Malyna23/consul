@@ -49,7 +49,7 @@ resource "null_resource" consul_cluster {
   }
 
   provisioner "file" {
-    content     = "${data.template_file.vault_conf.rendered}"
+    content     = "${element(data.template_file.vault_conf.*.rendered, count.index)}"
     destination = "/home/ubuntu/vault/config/local.json"
   }
 
