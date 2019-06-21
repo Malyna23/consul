@@ -23,3 +23,7 @@
    source = "./modules/ca"
    version = "0.0.1"
  }
+ module "databases" {
+   source = "./modules/databases"
+   version = "0.0.1"
+ }
