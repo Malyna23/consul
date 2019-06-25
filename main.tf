@@ -26,4 +26,6 @@
  module "databases" {
    source = "./modules/databases"
    version = "0.0.1"
+   subnet = "${module.vpc.subnet_databases}"
+   security_group = "${module.vpc.security_group}"
  }

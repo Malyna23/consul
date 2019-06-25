@@ -8,7 +8,7 @@ resource "aws_instance" "consul_server" {
   instance_type     = "${var.instance_type}"
   ami               = "${var.ami}"
   availability_zone = "${var.availability_zone}"
-  subnet_id         = "${var.vpc_network}"
+  subnet_id         = "${var.vpc_network[0]}"
   security_groups   = ["${var.security_group}"]
   key_name          = "${aws_key_pair.consul_cluster.id}"
 
