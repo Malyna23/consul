@@ -1,9 +1,4 @@
-resource "aws_key_pair" "consul_cluster" {
-  key_name   = "consul_cluster"
-  public_key = ""
-}
-
-resource "aws_instance" "consul_server" {
+resource "aws_instance" "consul_client" {
   count             = "${var.count_consul}"
   instance_type     = "${var.instance_type}"
   ami               = "${var.ami}"
@@ -13,17 +8,16 @@ resource "aws_instance" "consul_server" {
   key_name          = "${aws_key_pair.consul_cluster.id}"
 
   tags = {
-    Name = "consul-server-${count.index}"
-    consul = "server"
+    Name = "consul-client-${count.index}"
   }
 }
 
-resource "null_resource" consul_cluster {
-  depends_on = ["aws_instance.consul_server"]
+resource "null_resource" consul_client {
+  depends_on = ["aws_instance.consul_client"]
   count      = "${var.count_consul}"
 
   connection {
-    host        = "${element(aws_instance.consul_server.*.public_ip, count.index)}"
+    host        = "${element(aws_instance.consul_client.*.public_ip, count.index)}"
     type        = "ssh"
     user        = "ubuntu"
     private_key = "${file("${var.aws_pem_key_file_path}")}"
@@ -45,7 +39,7 @@ resource "null_resource" consul_cluster {
   }
 
   provisioner "file" {
-    source      = "modules/consul/templates/config.json"
+    source      = "modules/consul/templates/config-client.json"
     destination = "/home/ubuntu/config.json"
   }
 
@@ -69,11 +63,10 @@ resource "null_resource" consul_cluster {
           echo "Instance IP is: $IP"
           sudo docker run -d -v /home/ubuntu/keys:/var/pki -p 8500:8500 --net=host \
     --name=consul \
-    consul agent -server -ui \
+    consul agent -ui \
     -bind="$IP" -retry-join="provider=aws tag_key=consul tag_value=server access_key_id= secret_access_key=" \
-    -client="0.0.0.0" \
-    -bootstrap-expect="${var.count_consul}"
-    sudo docker cp /home/ubuntu/config.json consul:/consul/config
+    -client="0.0.0.0"
+    sudo docker cp /home/ubuntu/config.json consul:/consul/config/
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
     

@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket                  = "consultfstate"
-    region                  = "${var.region}"
+    region                  = "eu-central-1"
     key                     = "terraform.tfstate"
     shared_credentials_file = "~/.aws/credentials"
   }
