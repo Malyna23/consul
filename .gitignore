@@ -1,0 +1,8 @@
+### Terraform ###
+# General
+.terraform
+.ssh/
+terraform.tfstate.backup
+terraform.tfstate
+.terraform.tfstate.lock.info
+credentials

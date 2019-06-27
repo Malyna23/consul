@@ -1,0 +1,16 @@
+{
+  "datacenter": "dc1",
+  "data_dir": "/opt/consul",
+  "log_level": "INFO",
+  "server": true,
+  "addresses": {
+    "https": "0.0.0.0"
+  },
+  "ports": {
+    "http": 8501,
+    "https": 8500
+  },
+  "key_file": "/var/pki/key.pem",
+  "cert_file": "/var/pki/cert.pem",
+  "ca_file": "/var/pki/ca.pem"
+}
