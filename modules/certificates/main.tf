@@ -1,11 +1,11 @@
 resource "tls_private_key" "cert" {
-  count = "${var.certs_count}"
+  count = "4"
   algorithm   = "ECDSA"
   ecdsa_curve = "P521"
 }
 
 resource "tls_cert_request" "cert" {
-  count = "${var.certs_count}"
+  count = "4"
   key_algorithm   = "ECDSA"
   private_key_pem = "${element(tls_private_key.cert.*.private_key_pem,count.index)}"
 
@@ -20,7 +20,7 @@ resource "tls_cert_request" "cert" {
 }
 
 resource "tls_locally_signed_cert" "cert" {
-  count = "${var.certs_count}"
+  count = "4"
   cert_request_pem = "${element(tls_cert_request.cert.*.cert_request_pem,count.index)}"
 
   ca_key_algorithm   = "ECDSA"
