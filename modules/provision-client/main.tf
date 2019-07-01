@@ -28,6 +28,10 @@ resource "null_resource" consul_client {
     source      = "modules/provision-client/templates/config-client.json"
     destination = "/home/ubuntu/config.json"
   }
+  provisioner "file" {
+    source      = "modules/provision-client/templates/client.hcl"
+    destination = "/home/ubuntu/client.hcl"
+  }
 
   provisioner "file" {
     content     = "${element(data.template_file.vault_conf.*.rendered, count.index)}"
@@ -55,7 +59,7 @@ resource "null_resource" consul_client {
     sudo docker cp /home/ubuntu/config.json consul:/consul/config/
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
-    
+    sudo nomad agent -config=/home/ubuntu/client.hcl
 
           EOF
     ]
