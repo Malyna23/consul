@@ -1,5 +1,6 @@
-resource "null_resource" consul_cluster {
-  count = "${var.servers}"
+resource "null_resource" consul_client {
+#  depends_on = ["aws_instance.consul_client"]
+  count      = "${var.clients}"
 
   connection {
     host        = "${element(var.public_ip, count.index)}"
@@ -24,7 +25,7 @@ resource "null_resource" consul_cluster {
   }
 
   provisioner "file" {
-    source      = "modules/provision/templates/config.json"
+    source      = "modules/provision-client/templates/config-client.json"
     destination = "/home/ubuntu/config.json"
   }
 
@@ -48,11 +49,10 @@ resource "null_resource" consul_cluster {
           echo "Instance IP is: $IP"
           sudo docker run -d -v /home/ubuntu/keys:/var/pki -p 8500:8500 --net=host \
     --name=consul \
-    consul agent -server -ui \
+    consul agent -ui \
     -bind="$IP" -retry-join="provider=aws tag_key=consul tag_value=server access_key_id= secret_access_key=" \
-    -client="0.0.0.0" \
-    -bootstrap-expect="${var.servers}"
-    sudo docker cp /home/ubuntu/config.json consul:/consul/config
+    -client="0.0.0.0"
+    sudo docker cp /home/ubuntu/config.json consul:/consul/config/
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
     

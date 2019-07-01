@@ -1,4 +1,4 @@
-variable "servers" {}
+variable "clients" {}
 variable "aws_pem_key_file_path" { default = "./modules/provision/consul.pem" }
 variable "public_ip" { 
   type = "list"

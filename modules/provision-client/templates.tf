@@ -1,5 +1,5 @@
 data "template_file" "vault_conf" {
-  count    = "${var.servers}"
+  count    = "${var.clients}"
   template = "${file("${path.module}/templates/local.tpl")}"
 
   vars {

@@ -26,12 +26,14 @@ module "consul_client" {
 
 module "provision_server" {
   source         = "./modules/provision"
+  servers        = "${var.count_consul}"
   public_ip      = "${module.consul_server.public_ip}"
   private_ip_all = "${module.consul_server.private_ip_all}"
 }
 
 module "provision_client" {
-  source         = "./modules/provision"
+  source         = "./modules/provision-client"
+  clients        = "${var.count_consul}"
   public_ip      = "${module.consul_client.public_ip}"
   private_ip_all = "${module.consul_client.private_ip_all}"
 }
@@ -58,17 +60,18 @@ module "ca" {
   source = "./modules/ca"
 }
 
-module "databases" {
-  source               = "./modules/databases"
-  allocated_storage    = 20
-  storage_type         = "gp2"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  instance_class       = "db.t2.micro"
-  name                 = "mydb"
-  username             = "root"
-  password             = "12345678"
-  parameter_group_name = "default.mysql5.7"
-  subnet               = "${module.vpc.subnet_databases}"
-  security_group       = "${module.vpc.security_group}"
-}
+# module "databases" {
+#   source               = "./modules/databases"
+#   allocated_storage    = 20
+#   storage_type         = "gp2"
+#   engine               = "mysql"
+#   engine_version       = "5.7"
+#   instance_class       = "db.t2.micro"
+#   name                 = "mydb"
+#   username             = "root"
+#   password             = "12345678"
+#   parameter_group_name = "default.mysql5.7"
+#   subnet               = "${module.vpc.subnet_databases}"
+#   security_group       = "${module.vpc.security_group}"
+# }
+
