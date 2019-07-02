@@ -20,7 +20,7 @@ module "databases" {
 module "consul_server" {
   source            = "./modules/consul"
   name              = "consul-server"
-  tag = "server"
+  tag               = "server"
   count_consul      = "${var.count_servers}"
   instance_type     = "${var.instance_type}"
   ami               = "${var.ami}"
@@ -30,9 +30,9 @@ module "consul_server" {
 }
 
 module "consul_client" {
-  source = "./modules/consul"
-  name   = "consul-client"
-  tag = "client"
+  source            = "./modules/consul"
+  name              = "consul-client"
+  tag               = "client"
   count_consul      = "${var.count_consul}"
   instance_type     = "${var.instance_type}"
   ami               = "${var.ami}"

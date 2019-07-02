@@ -34,10 +34,10 @@ resource "null_resource" consul_cluster {
     source      = "modules/provision/templates/server.hcl"
     destination = "/home/ubuntu/server.hcl"
   }
-  # provisioner "file" {
-  #   source      = "modules/provision/templates/nomad.service"
-  #   destination = "/etc/systemd/system/nomad.service"
-  # }
+  provisioner "file" {
+    source      = "modules/provision/templates/nomad.service"
+    destination = "/home/ubuntu/nomad.service"
+  }
   provisioner "file" {
     content     = "${element(data.template_file.vault_conf.*.rendered, count.index)}"
     destination = "/home/ubuntu/vault/config/local.json"
@@ -48,6 +48,7 @@ resource "null_resource" consul_cluster {
           sudo apt-get -y update
           sudo apt -y update
           sudo apt -y install unzip
+          sudo cp nomad.service /etc/systemd/system/
           wget https://releases.hashicorp.com/nomad/0.9.1/nomad_0.9.1_linux_amd64.zip
           unzip nomad_0.9.1_linux_amd64.zip
           sudo mv nomad /usr/local/bin/
@@ -65,7 +66,7 @@ resource "null_resource" consul_cluster {
     sudo docker cp /home/ubuntu/config.json consul:/consul/config
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
-    #sudo systemctl start nomad
+    sudo systemctl start nomad.service
     #sudo nomad agent -config=/home/ubuntu/server.hcl
     
 
