@@ -8,3 +8,4 @@ variable "public_ip" {
   type = "list"
   default = []
  }
+ variable "endpoint" {}

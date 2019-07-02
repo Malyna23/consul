@@ -37,6 +37,10 @@ resource "null_resource" consul_client {
     content     = "${element(data.template_file.vault_conf.*.rendered, count.index)}"
     destination = "/home/ubuntu/vault/config/local.json"
   }
+  provisioner "file" {
+    content     = "${data.template_file.nomad_job.rendered}"
+    destination = "/home/ubuntu/nomad.conf"
+  }
 
   provisioner "remote-exec" {
     inline = [<<EOF
@@ -59,7 +63,9 @@ resource "null_resource" consul_client {
     sudo docker cp /home/ubuntu/config.json consul:/consul/config/
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
-    sudo nomad agent -config=/home/ubuntu/client.hcl
+    #sudo nomad agent -config=/home/ubuntu/client.hcl
+    #sudo nomad job run nomad.conf
+
 
           EOF
     ]

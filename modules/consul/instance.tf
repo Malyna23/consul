@@ -9,7 +9,7 @@ resource "aws_instance" "instance" {
 
   tags = {
     Name = "${var.name}-${count.index}"
-    consul = "server"
+    consul = "${var.tag}"
   }
 }
 

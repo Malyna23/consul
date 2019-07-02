@@ -12,6 +12,9 @@ resource "null_resource" consul_cluster {
     source      = "keys/${count.index}"
     destination = "/home/ubuntu/keys"
   }
+  # provisioner "remote-exec" {
+  #   inline = ["sudo chmod 700 /etc/systemd/system"]
+  # }
 
   provisioner "file" {
     source      = "keys/ca.pem"
@@ -31,7 +34,10 @@ resource "null_resource" consul_cluster {
     source      = "modules/provision/templates/server.hcl"
     destination = "/home/ubuntu/server.hcl"
   }
-
+  # provisioner "file" {
+  #   source      = "modules/provision/templates/nomad.service"
+  #   destination = "/etc/systemd/system/nomad.service"
+  # }
   provisioner "file" {
     content     = "${element(data.template_file.vault_conf.*.rendered, count.index)}"
     destination = "/home/ubuntu/vault/config/local.json"
@@ -59,7 +65,8 @@ resource "null_resource" consul_cluster {
     sudo docker cp /home/ubuntu/config.json consul:/consul/config
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
-    sudo nomad agent -config=/home/ubuntu/server.hcl
+    #sudo systemctl start nomad
+    #sudo nomad agent -config=/home/ubuntu/server.hcl
     
 
           EOF

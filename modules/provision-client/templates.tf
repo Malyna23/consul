@@ -6,3 +6,10 @@ data "template_file" "vault_conf" {
     consul_ip = "${element(var.private_ip_all, count.index)}"
   }
 }
+data "template_file" "nomad_job" {
+  template = "${file("${path.module}/templates/wordpress.tpl")}"
+
+  vars {
+    endpoint = "${var.endpoint}"
+  }
+}
