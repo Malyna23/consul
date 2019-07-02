@@ -18,5 +18,5 @@ resource "aws_db_instance" "default" {
   password             = "${var.password}"
   parameter_group_name = "${var.parameter_group_name}"
   db_subnet_group_name = "${aws_db_subnet_group.default.id}"
-  #security_group_names = ["${var.security_group}"]
+  vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
 }

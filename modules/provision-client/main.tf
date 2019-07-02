@@ -1,5 +1,5 @@
 resource "null_resource" consul_client {
-#  depends_on = ["aws_instance.consul_client"]
+  #depends_on = ["module.consul_client"]
   count      = "${var.clients}"
 
   connection {

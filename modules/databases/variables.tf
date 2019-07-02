@@ -8,5 +8,5 @@ variable "username" {}
 variable "password" {}
 variable "parameter_group_name" {}
 variable "subnet" {default = []}
-variable "security_group" {}
+variable "vpc_security_group_ids" {}
 
