@@ -9,7 +9,7 @@ resource "null_resource" consul_client {
   }
 
   provisioner "file" {
-    source      = "keys/${count.index}"
+    source      = "keys/${var.folder}/${count.index}"
     destination = "/home/ubuntu/keys"
   }
 

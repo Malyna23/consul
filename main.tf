@@ -46,6 +46,7 @@ module "provision_server" {
   servers        = "${var.count_servers}"
   public_ip      = "${module.consul_server.public_ip}"
   private_ip_all = "${module.consul_server.private_ip_all}"
+  folder = "server"
 }
 
 module "provision_client" {
@@ -54,24 +55,27 @@ module "provision_client" {
   public_ip      = "${module.consul_client.public_ip}"
   private_ip_all = "${module.consul_client.private_ip_all}"
   endpoint       = "${module.databases.endpoint}"
+  folder = "client"
 }
 
 module "ca" {
   source = "./modules/ca"
 }
 
-module "consul_certificates" {
+module "certificates_server" {
   source          = "./modules/certificates"
   certs_count     = "${var.count_consul}"
+  folder = "server"
   private_key_pem = "${module.ca.ca_private_key_pem}"
   ca_cert_pem     = "${module.ca.ca_cert_pem}"
   private_dns     = "${module.consul_server.private_dns}"
   private_ip_all  = "${module.consul_server.private_ip_all}"
 }
 
-module "consul_certificates1" {
+module "certificates_client" {
   source          = "./modules/certificates"
   certs_count     = "${var.count_consul}"
+  folder = "client"
   private_key_pem = "${module.ca.ca_private_key_pem}"
   ca_cert_pem     = "${module.ca.ca_cert_pem}"
   private_dns     = "${module.consul_client.private_dns}"

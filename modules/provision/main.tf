@@ -9,13 +9,10 @@ resource "null_resource" consul_cluster {
   }
 
   provisioner "file" {
-    source      = "keys/${count.index}"
+    source      = "keys/${var.folder}/${count.index}"
     destination = "/home/ubuntu/keys"
   }
-  # provisioner "remote-exec" {
-  #   inline = ["sudo chmod 700 /etc/systemd/system"]
-  # }
-
+  
   provisioner "file" {
     source      = "keys/ca.pem"
     destination = "/home/ubuntu/keys/ca.pem"
@@ -67,7 +64,7 @@ resource "null_resource" consul_cluster {
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
     sudo systemctl start nomad.service
-    #sudo nomad agent -config=/home/ubuntu/server.hcl
+    
     
 
           EOF

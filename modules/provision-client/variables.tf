@@ -9,3 +9,6 @@ variable "public_ip" {
   default = []
  }
  variable "endpoint" {}
+ 
+ variable "folder" {}
+ 
