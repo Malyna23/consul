@@ -2,28 +2,82 @@ module "vpc" {
   source = "./modules/vpc"
 }
 
-module "consul" {
-  source         = "./modules/consul"
-  count_consul   = "${var.count_consul}"
-  vpc_network    = "${module.vpc.consul_network}"
-  security_group = "${module.vpc.security_group}"
+module "databases" {
+  source                 = "./modules/databases"
+  allocated_storage      = 20
+  storage_type           = "gp2"
+  engine                 = "mysql"
+  engine_version         = "5.7"
+  instance_class         = "db.t2.micro"
+  name                   = "mydb"
+  username               = "root"
+  password               = "12345678"
+  parameter_group_name   = "default.mysql5.7"
+  subnet                 = "${module.vpc.subnet_databases}"
+  vpc_security_group_ids = "${module.vpc.security_group}"
 }
 
-module "consul_certificates" {
-  source          = "./modules/certificates"
-  certs_count     = "${var.count_consul}"
-  private_key_pem = "${module.ca.ca_private_key_pem}"
-  ca_cert_pem     = "${module.ca.ca_cert_pem}"
-  private_dns     = "${module.consul.private_dns}"
-  private_ip_all  = "${module.consul.private_ip_all}"
+module "consul_server" {
+  source            = "./modules/consul"
+  name              = "consul-server"
+  tag               = "server"
+  count_consul      = "${var.count_servers}"
+  instance_type     = "${var.instance_type}"
+  ami               = "${var.ami}"
+  availability_zone = ["${var.availability_zone}"]
+  vpc_network       = "${module.vpc.consul_network}"
+  security_group    = "${module.vpc.security_group}"
+}
+
+module "consul_client" {
+  source            = "./modules/consul"
+  name              = "consul-client"
+  tag               = "client"
+  count_consul      = "${var.count_consul}"
+  instance_type     = "${var.instance_type}"
+  ami               = "${var.ami}"
+  availability_zone = ["${var.availability_zone}"]
+  vpc_network       = "${module.vpc.consul_network}"
+  security_group    = "${module.vpc.security_group}"
+}
+
+module "provision_server" {
+  source         = "./modules/provision"
+  servers        = "${var.count_servers}"
+  public_ip      = "${module.consul_server.public_ip}"
+  private_ip_all = "${module.consul_server.private_ip_all}"
+  folder = "server"
+}
+
+module "provision_client" {
+  source         = "./modules/provision-client"
+  clients        = "${var.count_consul}"
+  public_ip      = "${module.consul_client.public_ip}"
+  private_ip_all = "${module.consul_client.private_ip_all}"
+  endpoint       = "${module.databases.endpoint}"
+  folder = "client"
 }
 
 module "ca" {
   source = "./modules/ca"
 }
 
-module "databases" {
-  source         = "./modules/databases"
-  subnet         = "${module.vpc.subnet_databases}"
-  security_group = "${module.vpc.security_group}"
+module "certificates_server" {
+  source          = "./modules/certificates"
+  certs_count     = "${var.count_consul}"
+  folder = "server"
+  private_key_pem = "${module.ca.ca_private_key_pem}"
+  ca_cert_pem     = "${module.ca.ca_cert_pem}"
+  private_dns     = "${module.consul_server.private_dns}"
+  private_ip_all  = "${module.consul_server.private_ip_all}"
+}
+
+module "certificates_client" {
+  source          = "./modules/certificates"
+  certs_count     = "${var.count_consul}"
+  folder = "client"
+  private_key_pem = "${module.ca.ca_private_key_pem}"
+  ca_cert_pem     = "${module.ca.ca_cert_pem}"
+  private_dns     = "${module.consul_client.private_dns}"
+  private_ip_all  = "${module.consul_client.private_ip_all}"
 }

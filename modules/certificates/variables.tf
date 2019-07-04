@@ -10,3 +10,4 @@ variable "private_dns" {
   default = []
  }
  variable "certs_count" { default = 0}
+variable "folder" {}

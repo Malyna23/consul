@@ -1,30 +1,15 @@
-resource "aws_instance" "consul_client" {
-  count             = "${var.count_consul}"
-  instance_type     = "${var.instance_type}"
-  ami               = "${var.ami}"
-  availability_zone = "${element(var.availability_zone, count.index)}"
-  subnet_id         = "${element(var.vpc_network, count.index)}"
-  security_groups   = ["${var.security_group}"]
-  key_name          = "${aws_key_pair.consul_cluster.id}"
-
-  tags = {
-    Name = "consul-client-${count.index}"
-  }
-}
-
 resource "null_resource" consul_client {
-  depends_on = ["aws_instance.consul_client"]
-  count      = "${var.count_consul}"
+  count      = "${var.clients}"
 
   connection {
-    host        = "${element(aws_instance.consul_client.*.public_ip, count.index)}"
+    host        = "${element(var.public_ip, count.index)}"
     type        = "ssh"
     user        = "ubuntu"
-    private_key = "${file("${var.aws_pem_key_file_path}")}"
+    private_key = "${file("./modules/provision/consul.pem")}"
   }
 
   provisioner "file" {
-    source      = "keys/${count.index}"
+    source      = "keys/${var.folder}/${count.index}"
     destination = "/home/ubuntu/keys"
   }
 
@@ -39,13 +24,25 @@ resource "null_resource" consul_client {
   }
 
   provisioner "file" {
-    source      = "modules/consul/templates/config-client.json"
+    source      = "modules/provision-client/templates/config-client.json"
     destination = "/home/ubuntu/config.json"
+  }
+  provisioner "file" {
+    source      = "modules/provision-client/templates/client.hcl"
+    destination = "/home/ubuntu/client.hcl"
+  }
+  provisioner "file" {
+    source      = "modules/provision-client/templates/nomad.service"
+    destination = "/home/ubuntu/nomad.service"
   }
 
   provisioner "file" {
     content     = "${element(data.template_file.vault_conf.*.rendered, count.index)}"
     destination = "/home/ubuntu/vault/config/local.json"
+  }
+  provisioner "file" {
+    content     = "${data.template_file.nomad_job.rendered}"
+    destination = "/home/ubuntu/nomad.conf"
   }
 
   provisioner "remote-exec" {
@@ -53,6 +50,7 @@ resource "null_resource" consul_client {
           sudo apt-get -y update
           sudo apt -y update
           sudo apt -y install unzip
+          sudo cp nomad.service /etc/systemd/system/
           wget https://releases.hashicorp.com/nomad/0.9.1/nomad_0.9.1_linux_amd64.zip
           unzip nomad_0.9.1_linux_amd64.zip
           sudo mv nomad /usr/local/bin/
@@ -69,7 +67,26 @@ resource "null_resource" consul_client {
     sudo docker cp /home/ubuntu/config.json consul:/consul/config/
     sudo docker restart consul
     sudo docker run -d -p 8200:8200 -v /home/ubuntu/keys:/vault/pki -v /home/ubuntu/vault:/vault --cap-add=IPC_LOCK  vault server
-    
+    sudo systemctl start nomad.service
+   
+
+
+          EOF
+    ]
+  }
+}
+resource "null_resource" job {
+ depends_on = ["null_resource.consul_client"]
+  connection {
+    host        = "${element(var.public_ip, 0)}"
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = "${file("./modules/provision/consul.pem")}"
+  }
+   provisioner "remote-exec" {
+    inline = [<<EOF
+         sudo nomad job run nomad.conf
+
 
           EOF
     ]
